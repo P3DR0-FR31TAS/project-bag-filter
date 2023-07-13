@@ -4,24 +4,24 @@
 #include <Adafruit_GFX.h>
 #include <Waveshare4InchTftShield.h>
 
-//PROTOTIPOS 
-void drawValvulasMenu(void);
-void drawHomeScreen(void);
+// PROTOTIPOS
+void drawValvesMenu(void);
+void drawHomeScreen(bool buttonState);
 
 // CORES 16-BITS
-#define	BLACK   0x0000
-#define	BLUE    0x001F
-#define	RED     0xF800
-#define	GREEN   0x07E0
-#define CYAN    0x07FF
+#define BLACK 0x0000
+#define BLUE 0x001F
+#define RED 0xF800
+#define GREEN 0x07E0
+#define CYAN 0x07FF
 #define MAGENTA 0xF81F
-#define YELLOW  0xFFE0
-#define WHITE   0xFFFF
+#define YELLOW 0xFFE0
+#define WHITE 0xFFFF
 #define DARKER_GREEN 0x0706
 
 // CRIAÇÃO DO OBJETO WAVESHIELD E REFERENCIA TFT
 namespace
-{ 
+{
   // Cria uma instância do objeto Waveshare4InchTftShield chamada Waveshield
   Waveshare4InchTftShield Waveshield;
   // Declara uma referência tft do tipo Adafruit_GFX e associa-a ao objeto Waveshield
@@ -29,6 +29,9 @@ namespace
 }
 
 // VARIAVEIS GLOBAIS
+#define MINPRESSURE 300
+#define MAXPRESSURE 400
+
 bool iniciarPrograma = false;
 
 int screenWidth;
@@ -48,21 +51,21 @@ int paginaAtual = PAGINA_INICIAL;
 // ESTADO DO BUTAO
 bool estadoButao = false;
 
-void drawValvulasMenu()
+void drawValvesMenu()
 {
   // DEFINE O TAMAHO E COR DO TITULO
-  tft.setTextSize(3); 
+  tft.setTextSize(3);
   tft.setTextColor(BLACK);
 
   // RETANGULO DO TITULO
   tft.fillRect(20, 20, 440, 30, BLUE);
-  
-  // ALINHA E IMPRIME NO DISPLAY "VALVULAS" 
-  int16_t textWidth, textHeight;
+
+  // ALINHA E IMPRIME NO DISPLAY "VALVULAS"
+  uint16_t textWidth, textHeight;
   tft.getTextBounds("VALVULAS", 0, 0, nullptr, nullptr, &textWidth, &textHeight);
 
   int16_t textX = (tft.width() - textWidth) / 2; // Centraliza o texto horizontalmente
-  int16_t textY = 25; // Posição vertical do texto
+  int16_t textY = 25;                            // Posição vertical do texto
 
   tft.setCursor(textX, textY);
   tft.print("VALVULAS");
@@ -91,24 +94,23 @@ void drawValvulasMenu()
 
   tft.fillTriangle(380, 90, 380, 230, 460, 160, BLUE);
   tft.drawTriangle(380, 90, 380, 230, 460, 160, WHITE);
-
 }
 
-void drawHomeScreen()
+void drawHomeScreen(bool buttonState)
 {
   // DEFINE O TAMAHO E COR DO TITULO
-  tft.setTextSize(3); 
+  tft.setTextSize(3);
   tft.setTextColor(BLACK);
 
   // RETANGULO DO TITULO
-  tft.fillRect(20, 20, 440, 30, BLUE);
-  
-  // ALINHA E IMPRIME NO DISPLAY "MENU PRINCIPAL" 
-  int16_t textWidth, textHeight;
+  tft.fillRect(0, 0, 480, 50, BLUE);
+
+  // ALINHA E IMPRIME NO DISPLAY "MENU PRINCIPAL"
+  uint16_t textWidth, textHeight;
   tft.getTextBounds("MENU PRINCIPAL", 0, 0, nullptr, nullptr, &textWidth, &textHeight);
 
   int16_t textX = (tft.width() - textWidth) / 2; // Centraliza o texto horizontalmente
-  int16_t textY = 25; // Posição vertical do texto
+  int16_t textY = 15;                            // Posição vertical do texto
 
   tft.setCursor(textX, textY);
   tft.print("MENU PRINCIPAL");
@@ -120,20 +122,33 @@ void drawHomeScreen()
   buttonX = (screenWidth - buttonWidth) / 2;
   buttonY = (screenHeight - buttonHeight) / 2 - 50;
 
-  // BUTÃO INCIAR PROGRAMA 
-  tft.fillRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, DARKER_GREEN);
-  tft.drawRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, WHITE);
-  tft.setTextColor(BLACK); // Define a cor do texto para branco
-  tft.setTextSize(3); // Define o tamanho do texto para 3
-  tft.setCursor(buttonX + (buttonWidth - 30) / 4 - 17, buttonY + (buttonHeight - textHeight) / 2);
-  tft.println("INICIAR"); // Escreve o texto no botão
+  if (buttonState == false)
+  {
+    // BUTÃO INCIAR PROGRAMA
+    tft.fillRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, DARKER_GREEN);
+    tft.drawRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, WHITE);
+    tft.setTextColor(BLACK); // Define a cor do texto para branco
+    tft.setTextSize(3);      // Define o tamanho do texto para 3
+    tft.setCursor(buttonX + (buttonWidth - 30) / 4 - 17, buttonY + (buttonHeight - textHeight) / 2);
+    tft.println("INICIAR"); // Escreve o texto no botão
+  }
+  else if (buttonState == true)
+  {
+    // BUTÃO ENCERRAR PROGRAMA
+    tft.fillRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, RED);
+    tft.drawRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, WHITE);
+    tft.setTextColor(BLACK); // Define a cor do texto para branco
+    tft.setTextSize(3);      // Define o tamanho do texto para 3
+    tft.setCursor(170, 97);
+    tft.println("ENCERRAR"); // Escreve o texto no botão
+  }
 
   Serial.print(buttonX + (buttonWidth - 30) / 4 - 17);
   Serial.print("    ");
   Serial.print(buttonY + (buttonHeight - textHeight) / 2);
 
   // BOTÃO AJUSTAR VALVULAS
-  int ajustesButtonY = buttonY + buttonHeight + 20;// POSIÇÃO VERTICAL DO BOTAO VALVULAS
+  int ajustesButtonY = buttonY + buttonHeight + 20; // POSIÇÃO VERTICAL DO BOTAO VALVULAS
   tft.fillRoundRect(buttonX, ajustesButtonY, buttonWidth, buttonHeight, 5, BLUE);
   tft.drawRoundRect(buttonX, ajustesButtonY, buttonWidth, buttonHeight, 5, WHITE);
   tft.setTextColor(BLACK);
@@ -144,8 +159,8 @@ void drawHomeScreen()
   // Informação das válvulas ativas
   int valveInfoWidth = 80;
   int valveInfoHeight = 30;
-  int valveInfoX = tft.width() - valveInfoWidth - 10; // Posição X 
-  int valveInfoY = 280; // Posição Y 
+  int valveInfoX = tft.width() - valveInfoWidth - 10; // Posição X
+  int valveInfoY = 280;                               // Posição Y
 
   tft.fillRoundRect(valveInfoX, valveInfoY, valveInfoWidth, valveInfoHeight, 5, BLUE);
   tft.drawRoundRect(valveInfoX, valveInfoY, valveInfoWidth, valveInfoHeight, 5, WHITE);
@@ -155,7 +170,7 @@ void drawHomeScreen()
   tft.println("V: 0");
 }
 
-void setup() 
+void setup()
 {
   Serial.begin(9600);
   SPI.begin();
@@ -164,8 +179,8 @@ void setup()
   tft.setRotation(3);
 
   // DESENHA O MENU INCIAL DE COMEÇO
-  drawHomeScreen();
-  
+  drawHomeScreen(false);
+
   screenWidth = tft.width();
   screenHeight = tft.height();
   buttonWidth = 160;
@@ -174,23 +189,25 @@ void setup()
   buttonY = (screenHeight - buttonHeight) / 2 - 50;
 }
 
-void loop() 
+void loop()
 {
-  // VARIAVEIS PARA O TOUCH
+  // VARIAVEIS PARA LER O TOUCH
   TSPoint p = Waveshield.getPoint();
   Waveshield.normalizeTsPoint(p); // CALIBRA O TOUCH PARA A RESOLUÇAO E ROTAÇÃO DO DISPLAY
 
-  if (paginaAtual == PAGINA_INICIAL) 
+  if (paginaAtual == PAGINA_INICIAL)
   {
     // VERIFICA SE O TOQUE OCORREU DENTRO DOS LIMITES DO BOTÃO VALVULAS
-    if (p.z > 10 && p.x > 160 && p.x < 330 && p.y > 170 && p.y < 230) 
+    if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 160 && p.x < 330 && p.y > 170 && p.y < 230)
     {
       paginaAtual = PAGINA_VALVULAS;
       tft.fillScreen(BLACK);
-      drawValvulasMenu();
+      drawValvesMenu();
     }
-    else if (p.z > 10 && p.x > 160 && p.x < 330 && p.y > 70 && p.y < 140)
+    // VERIFICA SE O TOQUE OCORREU DENTRO DOS LIMITES DO BOTÃO INICIAR/ENCERRAR
+    else if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 160 && p.x < 330 && p.y > 70 && p.y < 140)
     {
+      delay(200);
       // Verifique se o botão estava pressionado anteriormente
       if (!estadoButao)
       {
@@ -204,21 +221,21 @@ void loop()
         // ALTERA A COR E O TEXTO DO BOTAO PARA VERMELHO E "ENCERRAR"
         if (iniciarPrograma)
         {
-          // BUTÃO ENCERRAR PROGRAMA 
+          // BUTÃO ENCERRAR PROGRAMA
           tft.fillRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, RED);
           tft.drawRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, WHITE);
           tft.setTextColor(BLACK); // Define a cor do texto para branco
-          tft.setTextSize(3); // Define o tamanho do texto para 3
+          tft.setTextSize(3);      // Define o tamanho do texto para 3
           tft.setCursor(170, 97);
           tft.println("ENCERRAR"); // Escreve o texto no botão
         }
         else
         {
-          // BUTÃO INCIAR PROGRAMA 
+          // BUTÃO INCIAR PROGRAMA
           tft.fillRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, DARKER_GREEN);
           tft.drawRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 5, WHITE);
           tft.setTextColor(BLACK); // Define a cor do texto para branco
-          tft.setTextSize(3); // Define o tamanho do texto para 3
+          tft.setTextSize(3);      // Define o tamanho do texto para 3
           tft.setCursor(175, 98);
           tft.println("INICIAR"); // Escreve o texto no botão
         }
@@ -232,18 +249,17 @@ void loop()
         // Atualize o estado do botão
         estadoButao = false;
 
-        // Ação quando o botão é liberado
       }
     }
-  } 
-  else if (paginaAtual == PAGINA_VALVULAS) 
+  }
+  else if (paginaAtual == PAGINA_VALVULAS)
   {
     // VERIFICA SE O TOQUE OCORREU DENTRO DOS LIMITES DO BOTÃO VOLTAR
-    if (p.z > 10 && p.x > 170 && p.x < 330 && p.y > 250 && p.y < 300) 
+    if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 170 && p.x < 330 && p.y > 250 && p.y < 300)
     {
       paginaAtual = PAGINA_INICIAL;
       tft.fillScreen(BLACK);
-      drawHomeScreen();
+      drawHomeScreen(iniciarPrograma);
     }
   }
 
@@ -253,6 +269,8 @@ void loop()
   // Serial.print("    ");
   // Serial.print("Y: ");
   // Serial.print(p.y);
-  // Serial.println();
+  // Serial.print("    ");
+  Serial.print("Z: ");
+  Serial.print(p.z);
+  Serial.println();
 }
-
