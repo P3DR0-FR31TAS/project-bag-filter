@@ -141,16 +141,16 @@ void drawHomeScreen(bool buttonState)
   tft.setTextColor(WHITE);
   tft.print("Kp");
   tft.setTextColor(GREEN);
-  tft.setCursor(20, 130);
+  tft.setCursor(22, 128);
   tft.print("100");
 
   // NÚMERO DE CICLOS
   tft.drawRoundRect(120, 120, 60, 30, 0, WHITE);
-  tft.setCursor(140, 100);
+  tft.setCursor(128, 100);
   tft.setTextColor(WHITE);
-  tft.print("Num C");
+  tft.print("NumC");
   tft.setTextColor(GREEN);
-  tft.setCursor(135, 130);
+  tft.setCursor(132, 128);
   tft.print("100");
 
   if (buttonState == false)
