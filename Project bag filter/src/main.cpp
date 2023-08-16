@@ -7,6 +7,7 @@
 // PROTOTIPOS
 void drawValvesMenu(void);
 void drawHomeScreen(bool buttonState);
+void drawKpMenu(void);
 void valveButton(int16_t positionX, int16_t positionY, int16_t cursorX, int16_t cursorY, char *button_text);
 
 // CORES 16-BITS
@@ -44,11 +45,12 @@ int buttonHeight = 100;
 bool iniciarPrograma = false; // ESTADO DO PROGRAMA
 
 // DEFINE CONSTANTES PARA REPRESENTAR OS ESTADOS DAS PAGINAS
-const int PAGINA_INICIAL = 0;
-const int PAGINA_VALVULAS = 1;
+const int home_screen = 0;
+const int valves_menu = 1;
+const int kp_menu = 2;
 
-int paginaAtual = PAGINA_INICIAL; // VARIAVEL PARA ARMAZENAR O ESTADO ATUAL DA PAGINA
-bool estadoButao = false;         // ESTADO DO BUTAO
+int current_page = home_screen;    // VARIAVEL PARA ARMAZENAR O ESTADO ATUAL DA PAGINA
+bool program_button_state = false; // ESTADO DO BUTAO
 
 //***************************************************************//
 // FUNÇÃO PARA DESENHAR BUTAO DAS VALVULAS
@@ -74,9 +76,9 @@ void drawValvesMenu()
   tft.fillRect(70, 25, 20, 15, DARKER_GREEN);
 
   // BUTAO MENU VALVULAS
-  tft.drawRoundRect(161, 0, 160, 50, 5, DARKER_GREEN);
-  tft.fillTriangle(230 - 5, 15, 245 - 5, 25, 230 - 5, 35, DARKER_GREEN);
-  tft.fillTriangle(260 - 5, 15, 260 - 5, 35, 245 - 5, 25, DARKER_GREEN);
+  tft.fillRoundRect(161, 0, 160, 50, 5, DARKER_GREEN);
+  tft.fillTriangle(230 - 5, 15, 245 - 5, 25, 230 - 5, 35, BLACK);
+  tft.fillTriangle(260 - 5, 15, 260 - 5, 35, 245 - 5, 25, BLACK);
 
   // BUTAO MENU PRESSAO
   tft.drawRoundRect(322, 0, 158, 50, 5, DARKER_GREEN);
@@ -99,9 +101,9 @@ void drawValvesMenu()
 }
 
 //***************************************************************//
-// MENU PRINCIPAL
+// MENU PRESSAO
 //**************************************************************//
-void drawHomeScreen(bool buttonState)
+void drawKpMenu(void)
 {
   // BUTAO MENU PRINCIPAL
   tft.setTextSize(3);
@@ -109,6 +111,30 @@ void drawHomeScreen(bool buttonState)
   tft.drawRoundRect(0, 0, 160, 50, 5, DARKER_GREEN);
   tft.fillTriangle(64, 25, 95, 25, 80, 10, DARKER_GREEN);
   tft.fillRect(70, 25, 20, 15, DARKER_GREEN);
+
+  // BUTAO MENU VALVULAS
+  tft.drawRoundRect(161, 0, 160, 50, 5, DARKER_GREEN);
+  tft.fillTriangle(230 - 5, 15, 245 - 5, 25, 230 - 5, 35, DARKER_GREEN);
+  tft.fillTriangle(260 - 5, 15, 260 - 5, 35, 245 - 5, 25, DARKER_GREEN);
+
+  // BUTAO MENU PRESSAO
+  tft.fillRoundRect(322, 0, 158, 50, 5, DARKER_GREEN);
+  tft.setCursor(340, 15);
+  tft.setTextColor(BLACK);
+  tft.print("Pressao");
+}
+
+//***************************************************************//
+// MENU PRINCIPAL
+//**************************************************************//
+void drawHomeScreen(bool buttonState)
+{
+  // BUTAO MENU PRINCIPAL
+  tft.setTextSize(3);
+  tft.setTextColor(DARKER_GREEN);
+  tft.fillRoundRect(0, 0, 160, 50, 5, DARKER_GREEN);
+  tft.fillTriangle(64, 25, 95, 25, 80, 10, BLACK);
+  tft.fillRect(70, 25, 20, 15, BLACK);
 
   // BUTAO MENU VALVULAS
   tft.drawRoundRect(161, 0, 160, 50, 5, DARKER_GREEN);
@@ -196,29 +222,34 @@ void loop()
   TSPoint p = Waveshield.getPoint();
   Waveshield.normalizeTsPoint(p); // CALIBRA O TOUCH PARA A RESOLUÇAO E ROTAÇÃO DO DISPLAY
 
-  if (paginaAtual == PAGINA_INICIAL)
+  if (current_page == home_screen)
   {
-    // VERIFICA SE O TOQUE OCORREU DENTRO DOS LIMITES DO BOTÃO VALVULAS
+    // VERIFICA SE O TOCOU NO MENU VALVULAS
     if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 161 && p.x < 321 && p.y > 0 && p.y < 50)
     {
-      paginaAtual = PAGINA_VALVULAS;
+      current_page = valves_menu;
       tft.fillScreen(BLACK);
       drawValvesMenu();
+    }
+    // VERIFICA SE O TOCOU NO MENU Kp
+    else if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 322 && p.x < 480 && p.y > 0 && p.y < 50)
+    {
+      current_page = kp_menu;
+      tft.fillScreen(BLACK);
+      drawKpMenu();
     }
     // VERIFICA SE O TOQUE OCORREU DENTRO DOS LIMITES DO BOTÃO INICIAR/ENCERRAR
     else if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 200 && p.x < 300 && p.y > 40 && p.y < 140)
     {
       // Verifique se o botão estava pressionado anteriormente
-      if (!estadoButao)
+      if (!program_button_state)
       {
         // ATUALIZA O ESTADO DO BOTAO
-        estadoButao = true;
-
-        // AÇÃO QUANDO O BOTÃO É PRECIONADO
+        program_button_state = true;
+        // ALTERA O ESTADO DO PROGRAMA
         iniciarPrograma = !iniciarPrograma;
-        Serial.println(iniciarPrograma);
 
-        // ALTERA A COR E O TEXTO DO BOTAO PARA VERMELHO E "ENCERRAR"
+        // ALTERA O VISUAL DO BUTAO
         if (iniciarPrograma)
         {
           // BUTÃO ENCERRAR PROGRAMA
@@ -245,21 +276,45 @@ void loop()
     else
     {
       // Verifique se o estado do botão mudou
-      if (estadoButao)
+      if (program_button_state)
       {
         // Atualize o estado do botão
-        estadoButao = false;
+        program_button_state = false;
       }
     }
   }
-  else if (paginaAtual == PAGINA_VALVULAS)
+  else if (current_page == valves_menu)
   {
-    // VERIFICA SE O TOQUE OCORREU DENTRO DOS LIMITES DO BOTÃO VOLTAR
+    // VERIFICA SE TOCOU NO MENU PRINCIPAL
     if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 0 && p.x < 160 && p.y > 0 && p.y < 50)
     {
-      paginaAtual = PAGINA_INICIAL;
+      current_page = home_screen;
       tft.fillScreen(BLACK);
       drawHomeScreen(iniciarPrograma);
+    }
+    // VERIFICA SE O TOCOU NO MENU Kp
+    else if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 322 && p.x < 480 && p.y > 0 && p.y < 50)
+    {
+      current_page = kp_menu;
+      tft.fillScreen(BLACK);
+      drawKpMenu();
+    }
+  }
+  else if (current_page == kp_menu)
+  {
+    // VERIFICA SE TOCOU NO MENU PRINCIPAL
+    if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 0 && p.x < 160 && p.y > 0 && p.y < 50)
+    {
+      current_page = home_screen;
+      tft.fillScreen(BLACK);
+      drawHomeScreen(iniciarPrograma);
+    }
+    // VERIFICA SE O TOCOU NO MENU VALVULAS
+    else if (p.z > MINPRESSURE && p.z < MAXPRESSURE && p.x > 161 && p.x < 321 && p.y > 0 && p.y < 50)
+    {
+      current_page = valves_menu;
+      tft.fillScreen(BLACK);
+      drawValvesMenu();
     }
   }
 
