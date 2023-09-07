@@ -82,8 +82,10 @@ void drawValvesMenu()
 
   // BUTAO MENU PRESSAO
   tft.drawRoundRect(322, 0, 158, 50, 5, DARKER_GREEN);
-  tft.setCursor(340, 15);
-  tft.print("Pressao");
+  tft.drawCircle(401, 25, 18, GREEN);
+  tft.drawCircle(401, 25, 17, GREEN);
+  tft.fillCircle(401, 25, 5, GREEN);
+  tft.fillTriangle(396, 28 , 406, 28, 401, 12, GREEN);
 
   // PRIMEIRA FILA DOS BUTOES
   valveButton(0, 55, 35, 95, "V1");
@@ -119,9 +121,11 @@ void drawKpMenu(void)
 
   // BUTAO MENU PRESSAO
   tft.fillRoundRect(322, 0, 158, 50, 5, DARKER_GREEN);
-  tft.setCursor(340, 15);
-  tft.setTextColor(BLACK);
-  tft.print("Pressao");
+  tft.drawCircle(401, 25, 18, BLACK);
+  tft.drawCircle(401, 25, 17, BLACK);
+  tft.drawCircle(401, 25, 16, BLACK);
+  tft.fillCircle(401, 25, 5, BLACK);
+  tft.fillTriangle(396, 28 , 406, 28, 401, 12, BLACK);
 }
 
 //***************************************************************//
@@ -143,8 +147,10 @@ void drawHomeScreen(bool buttonState)
 
   // BUTAO MENU PRESSAO
   tft.drawRoundRect(322, 0, 158, 50, 5, DARKER_GREEN);
-  tft.setCursor(340, 15);
-  tft.print("Pressao");
+  tft.drawCircle(401, 25, 18, GREEN);
+  tft.drawCircle(401, 25, 17, GREEN);
+  tft.fillCircle(401, 25, 5, GREEN);
+  tft.fillTriangle(396, 28 , 406, 28, 401, 12, GREEN);
 
   // INFO
   tft.drawRoundRect(0, 55, 190, 265, 5, DARKER_GREEN);
